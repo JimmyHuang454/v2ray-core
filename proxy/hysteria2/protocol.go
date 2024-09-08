@@ -55,7 +55,7 @@ func (c *ConnWriter) WriteTCPHeader() error {
 }
 
 func QuicLen(s int) int {
-	return int(quicvarint.Len(uint64(s)))
+	return quicvarint.Len(uint64(s))
 }
 
 func (c *ConnWriter) writeTCPHeader() error {
