@@ -5,6 +5,7 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"encoding/base64"
+	"os"
 	"strings"
 	"sync"
 	"time"
@@ -194,6 +195,16 @@ func (c *Config) verifyPeerCert(rawCerts [][]byte, verifiedChains [][]*x509.Cert
 	return nil
 }
 
+type alwaysFlushWriter struct {
+	file *os.File
+}
+
+func (a *alwaysFlushWriter) Write(p []byte) (n int, err error) {
+	n, err = a.file.Write(p)
+	a.file.Sync()
+	return n, err
+}
+
 // GetTLSConfig converts this Config into tls.Config.
 func (c *Config) GetTLSConfig(opts ...Option) *tls.Config {
 	root, err := c.getCertPool()
@@ -224,6 +235,10 @@ func (c *Config) GetTLSConfig(opts ...Option) *tls.Config {
 		SessionTicketsDisabled: !c.EnableSessionResumption,
 		VerifyPeerCertificate:  c.verifyPeerCert,
 		ClientCAs:              clientRoot,
+	}
+
+	if c.AllowInsecureIfPinnedPeerCertificate && c.PinnedPeerCertificateChainSha256 != nil {
+		config.InsecureSkipVerify = true
 	}
 
 	for _, opt := range opts {

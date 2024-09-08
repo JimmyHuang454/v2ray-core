@@ -6,6 +6,7 @@ import (
 
 	hyProtocol "github.com/apernet/hysteria/core/v2/international/protocol"
 	"github.com/apernet/quic-go/quicvarint"
+
 	"github.com/v2fly/v2ray-core/v5/common/buf"
 	"github.com/v2fly/v2ray-core/v5/common/net"
 	hyTransport "github.com/v2fly/v2ray-core/v5/transport/internet/hysteria2"
@@ -15,7 +16,6 @@ import (
 type ConnWriter struct {
 	io.Writer
 	Target        net.Destination
-	Account       *MemoryAccount
 	TCPHeaderSent bool
 }
 
@@ -60,6 +60,8 @@ func QuicLen(s int) int {
 
 func (c *ConnWriter) writeTCPHeader() error {
 	c.TCPHeaderSent = true
+
+	// TODO: the padding length here should be randomized
 
 	padding := "Jimmy Was Here"
 	paddingLen := len(padding)
